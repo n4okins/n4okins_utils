@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Union
+from typing import Iterable, Iterator, Optional, Union
 
 __all__ = [
     "Color",
@@ -11,6 +11,11 @@ __all__ = [
     "ColorCode",
     "EffectCode",
     "JapaneseColorCode",
+    "ColorTheme",
+    "JapaneseColorTheme",
+    "EFFECT_CODE",
+    "COLOR_CODE",
+    "JP_COLOR_CODE",
 ]
 
 
@@ -65,15 +70,22 @@ class Color:
     def hex(self) -> HEXColorType:
         return self._hex
 
+    def reverse(self) -> "Color":
+        ""
+        return Color((255 - c for c in self.rgb))
+
     def __eq__(self, other: "Color") -> bool:
         return self.rgb == other.rgb
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         s = "Color("
         if self.name:
             s += f'"{self.name}", '
         s += f"RGB:{self.rgb}, HEX:#{self.hex})"
         return s
+
+    def __str__(self) -> "ColoredStr":
+        return ColoredStr(self.name or self.hex, fg=self)
 
     def __iter__(self):
         return iter(self.rgb)
@@ -157,32 +169,33 @@ class ColoredStr(str):
             foreground_color = fg
         if bg:
             background_color = bg
-
+        cls._foreground = ""
+        cls._background = ""
+        cls._inner_text = text
+        if foreground_color:
+            if not isinstance(foreground_color, Color):
+                foreground_color = Color(cls.convert_any_to_rgb(foreground_color))
         if effects:
             if not isinstance(effects, Iterable):
                 effects = [effects]
             effects = [
                 str(TerminalEffectType(e)) for e in effects if isinstance(e, int)
             ]
-            text = (
-                "\033[{};38;2;{};{};{}m{}\033[0m".format(
-                    ";".join(effects), *foreground_color, text
-                )
-                if foreground_color
-                else text
-            )
+            if foreground_color:
+                r, g, b = foreground_color.rgb
+                cls._foreground = f"\033[{';'.join(effects)};38;2;{r};{g};{b}m"
         else:
-            text = (
-                "\033[38;2;{};{};{}m{}\033[0m".format(*foreground_color, text)
-                if foreground_color
-                else text
-            )
+            if foreground_color:
+                r, g, b = foreground_color.rgb
+                cls._foreground = f"\033[38;2;{r};{g};{b}m"
 
-        text = (
-            "\033[48;2;{};{};{}m{}\033[0m".format(*background_color, text)
-            if background_color
-            else text
-        )
+        if background_color:
+            if not isinstance(background_color, Color):
+                background_color = Color(cls.convert_any_to_rgb(background_color))
+            r, g, b = background_color.rgb
+            cls._background = f"\033[48;2;{r};{g};{b}m"
+
+        cls._reset = "\033[0m"
         return super().__new__(cls, text)
 
     @staticmethod
@@ -195,6 +208,12 @@ class ColoredStr(str):
             )
         else:
             return color
+
+    def __str__(self):
+        return f"{self._foreground}{self._background}{self._inner_text}{self._reset}"
+
+    def __repr__(self):
+        return f"ColoredStr({super().__repr__()})"
 
 
 @dataclass(frozen=True)
@@ -212,7 +231,7 @@ class EffectCode:
     STRIKE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(9))
 
 
-EffectCode = EffectCode()
+EFFECT_CODE = EffectCode()
 
 
 def colorfield(*args):
@@ -380,7 +399,7 @@ class ColorCode:
             raise AttributeError(f"Color '{name}' not found")
 
 
-ColorCode = ColorCode()
+COLOR_CODE = ColorCode()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1782,6 +1801,14 @@ class JapaneseColorCode:
     KUWANOMIIRO: Color = colorfield("#55295B", "KUWANOMIIRO")
     ANKOKUSHOKU: Color = colorfield("#16160E", "ANKOKUSHOKU")
 
+    裏葉色: Color = colorfield("#A4C2A9", "裏葉色")
+    うらはいろ: Color = colorfield("#A4C2A9", "うらはいろ")
+    URAHAIRO: Color = colorfield("#A4C2A9", "URAHAIRO")
+
+    小鴨色: Color = colorfield("#006263", "小鴨色")
+    こがもいろ: Color = colorfield("#006263", "こがもいろ")
+    KOGAMOIRO: Color = colorfield("#006263", "KOGAMOIRO")
+
     @staticmethod
     def search(name: str) -> Color:
         """Search color by name
@@ -1818,4 +1845,61 @@ class JapaneseColorCode:
             raise AttributeError(f"Color '{name}' not found")
 
 
-JapaneseColorCode = JapaneseColorCode()
+JP_COLOR_CODE = JapaneseColorCode()
+
+
+@dataclass(frozen=True, slots=True)
+class ColorTheme:
+    name: str
+    colors: tuple[Color, ...] = field(default_factory=tuple)
+
+    length: int = field(init=False)
+
+    def __post_init__(self):
+        object.__setattr__(self, "length", len(self.colors))
+
+    def __len__(self) -> int:
+        return self.length
+
+    def __getitem__(self, key: int) -> Color:
+        return self.colors[key]
+
+    def __iter__(self) -> Iterator[Color]:
+        return iter(self.colors)
+
+    def __str__(self) -> str:
+        return f"ColorTheme(name={self.name}, colors={','.join(map(str, self.colors))})"
+
+
+@dataclass(frozen=True, slots=True)
+class JapaneseColorTheme:
+    # http://www.ikiya.jp/color/scheme/spring.html
+    春: ColorTheme = ColorTheme(
+        "春",
+        (
+            JP_COLOR_CODE.桜色,
+            JP_COLOR_CODE.若葉色,
+            JP_COLOR_CODE.紅梅色,
+            JP_COLOR_CODE.柳茶,
+            JP_COLOR_CODE.菜の花色,
+            JP_COLOR_CODE.青藤色,
+        ),
+    )
+    夏: ColorTheme = ColorTheme(
+        "夏",
+        (
+            JP_COLOR_CODE.浅葱色,
+            JP_COLOR_CODE.若竹色,
+            JP_COLOR_CODE.萱草色,
+            JP_COLOR_CODE.露草色,
+            JP_COLOR_CODE.小鴨色,
+            JP_COLOR_CODE.杜若色,
+            JP_COLOR_CODE.菖蒲色,
+        ),
+    )
+
+    def __iter__(self) -> Iterator[ColorTheme]:
+        return iter((getattr(self, name) for name in self.__slots__))
+
+
+JP_COLOR_THEME = JapaneseColorTheme()
