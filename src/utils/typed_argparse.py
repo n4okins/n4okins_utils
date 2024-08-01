@@ -91,7 +91,6 @@ def typed_argument_class(cls: object) -> object:
                     d[k] = v
                 else:
                     d[k] = targ(name_or_flags=k, type=t, default=v)
-                print(k, t, d[k].metadata)
 
             cls = type(cls.__name__, cls.__bases__, d)
             cls = dataclass(cls)
