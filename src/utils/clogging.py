@@ -26,16 +26,23 @@ class ColoredFormatter(logging.Formatter):
         levelname = record.levelname
         if levelname in self._colormap:
             if levelname == "CRITICAL":
-                record.levelname = ColoredStr(f"{levelname:^9}", bg=self._colormap[levelname])
+                record.levelname = ColoredStr(
+                    f"{levelname:^9}", bg=self._colormap[levelname]
+                )
             else:
-                record.levelname = ColoredStr(f"{levelname:^9}", self._colormap[levelname])
+                record.levelname = ColoredStr(
+                    f"{levelname:^9}", self._colormap[levelname]
+                )
             record.msg = ColoredStr(record.msg, self._colormap[levelname])
         return super().format(record)
 
 
-def getColoredLogger(name: Optional[str] = None) -> logging.Logger:
+def getColoredLogger(
+    name: Optional[str] = None,
+    *,
+    handlers: Optional[logging.Handler | list[logging.Handler]] = None,
+) -> logging.Logger:
     logger = logging.getLogger(name)
-
     if not logger.handlers:
         handler = logging.StreamHandler()
         handler.setFormatter(
@@ -45,4 +52,12 @@ def getColoredLogger(name: Optional[str] = None) -> logging.Logger:
             )
         )
         logger.addHandler(handler)
+
+    if handlers:
+        if not isinstance(handlers, list):
+            handlers = [handlers]
+        for handler in handlers:
+            logger.addHandler(handler)
+
+    logger.propagate = False
     return logger

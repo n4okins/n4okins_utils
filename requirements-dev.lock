@@ -25,6 +25,8 @@ pydantic==2.8.2
 pydantic-core==2.20.1
     # via pydantic
 pytest==8.3.2
+python-dotenv==1.0.1
+    # via utils
 ruff==0.5.5
 typing-extensions==4.12.2
     # via mypy
