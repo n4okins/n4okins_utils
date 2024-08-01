@@ -31,9 +31,7 @@ class HEXColorType(str):
         if color.startswith("#"):
             color = color[1:]
         assert len(color) == 6, "Color must be a 6-character string"
-        assert all(
-            c in "0123456789abcdef" for c in color.lower()
-        ), "Color must be a hexadecimal string"
+        assert all(c in "0123456789abcdef" for c in color.lower()), "Color must be a hexadecimal string"
         return super().__new__(cls, color)
 
 
@@ -72,9 +70,11 @@ class Color:
 
     def reverse(self) -> "Color":
         ""
-        return Color((255 - c for c in self.rgb))
+        return Color(tuple(255 - c for c in self.rgb))
 
-    def __eq__(self, other: "Color") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Color):
+            raise NotImplementedError
         return self.rgb == other.rgb
 
     def __repr__(self) -> str:
@@ -83,9 +83,6 @@ class Color:
             s += f'"{self.name}", '
         s += f"RGB:{self.rgb}, HEX:#{self.hex})"
         return s
-
-    def __str__(self) -> "ColoredStr":
-        return ColoredStr(self.name or self.hex, fg=self)
 
     def __iter__(self):
         return iter(self.rgb)
@@ -97,9 +94,9 @@ class Color:
         if isinstance(color, tuple):
             return RGBColorType(color)
         elif isinstance(color, str):
-            return RGBColorType(
-                tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2))
-            )
+            rgb: tuple[int, int, int] = tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2))  # type: ignore
+            assert len(rgb) == 3, "Color must be a 3-tuple"
+            return RGBColorType(rgb)
         else:
             return color
 
@@ -115,7 +112,7 @@ class Color:
             return color
 
 
-class ColoredStr(str):
+class ColoredStr:
     """Decorate a string with color and effects for terminal output.
     ColoredStr is a subclass of str that allows you to create colored text in the terminal.
 
@@ -153,15 +150,13 @@ class ColoredStr(str):
 
     """
 
-    def __new__(
-        cls,
+    def __init__(
+        self,
         text: str,
         fg: Optional[Color] = None,
         bg: Optional[Color] = None,
         *,
-        effects: Optional[
-            TerminalEffectType | int | Iterable[TerminalEffectType] | Iterable[int]
-        ] = None,
+        effects: Optional[TerminalEffectType | int | Iterable[TerminalEffectType] | Iterable[int]] = None,
         foreground_color: Optional[Color] = None,
         background_color: Optional[Color] = None,
     ):
@@ -169,51 +164,56 @@ class ColoredStr(str):
             foreground_color = fg
         if bg:
             background_color = bg
-        cls._foreground = ""
-        cls._background = ""
-        cls._inner_text = text
+        self._foreground = ""
+        self._background = ""
+        self._inner_text = text
         if foreground_color:
             if not isinstance(foreground_color, Color):
-                foreground_color = Color(cls.convert_any_to_rgb(foreground_color))
+                foreground_color = Color(self.convert_any_to_rgb(foreground_color))
         if effects:
             if not isinstance(effects, Iterable):
                 effects = [effects]
-            effects = [
-                str(TerminalEffectType(e)) for e in effects if isinstance(e, int)
-            ]
+            effects = [str(TerminalEffectType(e)) for e in effects if isinstance(e, int)]
             if foreground_color:
                 r, g, b = foreground_color.rgb
-                cls._foreground = f"\033[{';'.join(effects)};38;2;{r};{g};{b}m"
+                self._foreground = f"\033[{';'.join(effects)};38;2;{r};{g};{b}m"
         else:
             if foreground_color:
                 r, g, b = foreground_color.rgb
-                cls._foreground = f"\033[38;2;{r};{g};{b}m"
+                self._foreground = f"\033[38;2;{r};{g};{b}m"
 
         if background_color:
             if not isinstance(background_color, Color):
-                background_color = Color(cls.convert_any_to_rgb(background_color))
+                background_color = Color(self.convert_any_to_rgb(background_color))
             r, g, b = background_color.rgb
-            cls._background = f"\033[48;2;{r};{g};{b}m"
+            self._background = f"\033[48;2;{r};{g};{b}m"
 
-        cls._reset = "\033[0m"
-        return super().__new__(cls, text)
+        self._reset = "\033[0m"
+
+    @property
+    def text(self) -> str:
+        return self._inner_text
+
+    def __len__(self) -> int:
+        return len(self._inner_text)
+
+    def __str__(self) -> str:
+        return f"{self._foreground}{self._background}{self._inner_text}{self._reset}{self._reset}"
+
+    def __add__(self, other: str) -> str:
+        return str(self) + str(other)
+
+    def __radd__(self, other: str) -> str:
+        return str(other) + str(self)
 
     @staticmethod
     def convert_any_to_rgb(color: Color) -> Color:
         if isinstance(color, tuple):
             return RGBColorType(color)
         elif isinstance(color, str):
-            return RGBColorType(
-                tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2))
-            )
+            return RGBColorType(tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2)))
         else:
             return color
-
-    def __str__(self):
-        return f"{self._foreground}{self._background}{self._inner_text}{self._reset}"
-
-    def __repr__(self):
-        return f"ColoredStr({super().__repr__()})"
 
 
 @dataclass(frozen=True)
@@ -223,9 +223,7 @@ class EffectCode:
     ITALIC: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(3))
     UNDERLINE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(4))
     BLINK: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(5))
-    RAPID_BLINK: TerminalEffectType = field(
-        default_factory=lambda: TerminalEffectType(6)
-    )
+    RAPID_BLINK: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(6))
     REVERSE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(7))
     INVISIBLE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(8))
     STRIKE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(9))
@@ -393,9 +391,7 @@ class ColorCode:
             if len(candidate) == 1:
                 return getattr(ColorCode, candidate[0])
             elif len(candidate) > 1:
-                raise AttributeError(
-                    f"Color '{name}' is ambiguous, candidates are {candidate}"
-                )
+                raise AttributeError(f"Color '{name}' is ambiguous, candidates are {candidate}")
             raise AttributeError(f"Color '{name}' not found")
 
 
@@ -1809,6 +1805,10 @@ class JapaneseColorCode:
     こがもいろ: Color = colorfield("#006263", "こがもいろ")
     KOGAMOIRO: Color = colorfield("#006263", "KOGAMOIRO")
 
+    藁色: Color = colorfield("#D5C752", "藁色")
+    わらいろ: Color = colorfield("#D5C752", "わらいろ")
+    WARAIRO: Color = colorfield("#D5C752", "WARAIRO")
+
     @staticmethod
     def search(name: str) -> Color:
         """Search color by name
@@ -1839,9 +1839,7 @@ class JapaneseColorCode:
             if len(candidate) == 1:
                 return getattr(JapaneseColorCode, candidate[0])
             elif len(candidate) > 1:
-                raise AttributeError(
-                    f"Color '{name}' is ambiguous, candidates are {candidate}"
-                )
+                raise AttributeError(f"Color '{name}' is ambiguous, candidates are {candidate}")
             raise AttributeError(f"Color '{name}' not found")
 
 
@@ -1852,7 +1850,6 @@ JP_COLOR_CODE = JapaneseColorCode()
 class ColorTheme:
     name: str
     colors: tuple[Color, ...] = field(default_factory=tuple)
-
     length: int = field(init=False)
 
     def __post_init__(self):
@@ -1868,12 +1865,11 @@ class ColorTheme:
         return iter(self.colors)
 
     def __str__(self) -> str:
-        return f"ColorTheme(name={self.name}, colors={','.join(map(str, self.colors))})"
+        return f"ColorTheme(name={self.name}, colors={','.join(map(lambda x: str(ColoredStr(str(x.name), fg=x)), self))})"
 
 
 @dataclass(frozen=True, slots=True)
 class JapaneseColorTheme:
-    # http://www.ikiya.jp/color/scheme/spring.html
     春: ColorTheme = ColorTheme(
         "春",
         (
@@ -1895,6 +1891,28 @@ class JapaneseColorTheme:
             JP_COLOR_CODE.小鴨色,
             JP_COLOR_CODE.杜若色,
             JP_COLOR_CODE.菖蒲色,
+        ),
+    )
+    秋: ColorTheme = ColorTheme(
+        "秋",
+        (
+            JP_COLOR_CODE.茜色,
+            JP_COLOR_CODE.深支子,
+            JP_COLOR_CODE.竜胆色,
+            JP_COLOR_CODE.柿色,
+            JP_COLOR_CODE.栗皮茶,
+            JP_COLOR_CODE.群青色,
+        ),
+    )
+    冬: ColorTheme = ColorTheme(
+        "冬",
+        (
+            JP_COLOR_CODE.銀鼠,
+            JP_COLOR_CODE.消炭色,
+            JP_COLOR_CODE.薄香,
+            JP_COLOR_CODE.千歳緑,
+            JP_COLOR_CODE.朱色,
+            JP_COLOR_CODE.藁色,
         ),
     )
 

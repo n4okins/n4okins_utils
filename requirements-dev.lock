@@ -9,6 +9,8 @@
 #   generate-hashes: false
 
 -e file:.
+annotated-types==0.7.0
+    # via pydantic
 iniconfig==2.0.0
     # via pytest
 mypy==1.11.0
@@ -18,7 +20,13 @@ packaging==24.1
     # via pytest
 pluggy==1.5.0
     # via pytest
+pydantic==2.8.2
+    # via utils
+pydantic-core==2.20.1
+    # via pydantic
 pytest==8.3.2
 ruff==0.5.5
 typing-extensions==4.12.2
     # via mypy
+    # via pydantic
+    # via pydantic-core

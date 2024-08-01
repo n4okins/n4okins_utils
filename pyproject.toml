@@ -5,7 +5,9 @@ description = "My original utility functions"
 authors = [
     { name = "n4okins", email = "63445867+n4okins@users.noreply.github.com" }
 ]
-dependencies = []
+dependencies = [
+    "pydantic>=2.8.2",
+]
 readme = "README.md"
 requires-python = ">= 3.10"
 
