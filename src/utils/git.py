@@ -21,14 +21,16 @@ def get_git_ignore(path: Path) -> Path:
     return parent_search(path, ".gitignore", enable_return_none=False)
 
 
-def is_in_gitignore(path: Path, pattern: str) -> bool:
+def is_in_gitignore(gitignore_path: Path, pattern: str) -> bool:
     """Check if the pattern is in the .gitignore file of the Git repository.
     Args:
-        path (Path): The starting directory.
+        gitignore_path (Path): The .gitignore file.
         pattern (str): The pattern.
     Returns:
         bool: Whether the pattern is in the .gitignore file.
     """
-    git_ignore = get_git_ignore(get_git_root(path))
-    with open(git_ignore, "r") as f:
-        return pattern in f.read()
+    with open(gitignore_path, "r") as f:
+        for line in f:
+            if line.strip() == pattern:
+                return True
+    return False
