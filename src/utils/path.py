@@ -15,17 +15,14 @@ def parent_search(
         Path: The directory with the given name.
         or None if the directory is not found and can_raise_error is False.
     """
+    tmp = path
     while True:
         if (path / name).exists():
             return path / name
-        if path == path.parent and not enable_return_none:
-            raise FileNotFoundError(
-                f"Could not find {name} in the parent directories of {path}"
-            )
-        elif path == Path("/"):
+        elif str(path) == path.root:
             if not enable_return_none:
                 raise FileNotFoundError(
-                    f"Could not find {name} in the parent directories of {path}"
+                    f"Could not find {name} in the parent directories of {tmp} or its parent directories"
                 )
             else:
                 return None
