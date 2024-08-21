@@ -29,7 +29,7 @@ def parent_search(
         path = path.parent
 
 
-def get_current_dir(_globals_dict: dict) -> Path:
+def get_file_parent_dir(_globals_dict: dict) -> Path:
     """Get the current directory of the Python script or Jupyter notebook.
     If the script is running in a Jupyter notebook, return the current working directory.
     Args:

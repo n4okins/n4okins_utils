@@ -8,15 +8,15 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from .clogging import getColoredLogger
-from .git import is_in_gitignore
-from .path import get_current_dir, parent_search
+from .git import get_git_root, is_in_gitignore
+from .path import get_file_parent_dir, parent_search
 
 
 def initializer(
     globals_: dict[str, object],
-    logger: Optional[logging.Logger] = getColoredLogger(__name__),
     *,
     dotenv_filename: str = ".env",
+    logger: Optional[logging.Logger] = getColoredLogger(__name__),
 ) -> Path:
     """Initialize the environment
     Load the .env file and set the HUGGINGFACE_HUB_CACHE environment variable.
@@ -28,15 +28,17 @@ def initializer(
 
     Returns:
         project_root_directory (Path): The detected project root directory.
-        equal to __file__ (Python environment) or the current working directory (Jupyter environment).
+        if .gitignore is detected, the project root directory is the directory containing the .git directory.
+        if .env is detected, the project root directory is the parent directory of the .env file.
+        Otherwise, the project root directory is the parent directory of the script.
     """
     logger.info("Initializing...")
-    PROJECT_ROOT_DIR = Path(get_current_dir(globals_))
+    FILE_PARENT_DIR = Path(get_file_parent_dir(globals_))
     DOTENV_PATH = parent_search(
-        PROJECT_ROOT_DIR, dotenv_filename, enable_return_none=True
+        FILE_PARENT_DIR, dotenv_filename, enable_return_none=True
     )
     GITIGNORE_PATH = parent_search(
-        PROJECT_ROOT_DIR, ".gitignore", enable_return_none=True
+        FILE_PARENT_DIR, ".gitignore", enable_return_none=True
     )
     if GITIGNORE_PATH is None:
         logger.info("Could not detect .gitignore file")
@@ -47,13 +49,20 @@ def initializer(
         logger.info("Could not detect .env file")
     else:
         logger.info(f"{DOTENV_PATH=}")
-        load_dotenv(dotenv_path=PROJECT_ROOT_DIR.parent / dotenv_filename)
+        load_dotenv(dotenv_path=FILE_PARENT_DIR.parent / dotenv_filename)
         if GITIGNORE_PATH is not None and not is_in_gitignore(
             GITIGNORE_PATH, dotenv_filename
         ):
             logger.warning(
                 f"dotenv file is detected at {DOTENV_PATH}, but `{dotenv_filename}` not in .gitignore (in {GITIGNORE_PATH})."
             )
+
+    if GITIGNORE_PATH is not None:
+        PROJECT_ROOT_DIR = get_git_root(FILE_PARENT_DIR)
+    if PROJECT_ROOT_DIR is None and DOTENV_PATH is not None:
+        PROJECT_ROOT_DIR = DOTENV_PATH.parent
+    if PROJECT_ROOT_DIR is None:
+        PROJECT_ROOT_DIR = FILE_PARENT_DIR
 
     HUGGINGFACE_HUB_CACHE = os.environ.get("HUGGINGFACE_HUB_CACHE", None)
     logger.info(f"{HUGGINGFACE_HUB_CACHE=}")
