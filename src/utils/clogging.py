@@ -31,9 +31,9 @@ class ColoredFormatter(logging.Formatter):
                 )
             else:
                 record.levelname = ColoredStr(
-                    f"{levelname:^9}", self._colormap[levelname]
+                    f"{levelname:^9}", fg=self._colormap[levelname]
                 )
-            record.msg = ColoredStr(record.msg, self._colormap[levelname])
+            record.msg = ColoredStr(record.msg, fg=self._colormap[levelname])
         return super().format(record)
 
 
