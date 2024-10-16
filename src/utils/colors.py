@@ -31,7 +31,9 @@ class HEXColorType(str):
         if color.startswith("#"):
             color = color[1:]
         assert len(color) == 6, "Color must be a 6-character string"
-        assert all(c in "0123456789abcdef" for c in color.lower()), "Color must be a hexadecimal string"
+        assert all(
+            c in "0123456789abcdef" for c in color.lower()
+        ), "Color must be a hexadecimal string"
         return super().__new__(cls, color)
 
 
@@ -69,7 +71,6 @@ class Color:
         return self._hex
 
     def reverse(self) -> "Color":
-        ""
         return Color(tuple(255 - c for c in self.rgb))
 
     def __eq__(self, other: object) -> bool:
@@ -94,7 +95,9 @@ class Color:
         if isinstance(color, tuple):
             return RGBColorType(color)
         elif isinstance(color, str):
-            rgb: tuple[int, int, int] = tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2))  # type: ignore
+            rgb: tuple[int, int, int] = tuple(
+                int(color[i : i + 2], 16) for i in range(0, 6, 2)
+            )  # type: ignore
             assert len(rgb) == 3, "Color must be a 3-tuple"
             return RGBColorType(rgb)
         else:
@@ -153,12 +156,14 @@ class ColoredStr:
     def __init__(
         self,
         text: str,
+        *,
         fg: Optional[Color] = None,
         bg: Optional[Color] = None,
-        *,
-        effects: Optional[TerminalEffectType | int | Iterable[TerminalEffectType] | Iterable[int]] = None,
         foreground_color: Optional[Color] = None,
         background_color: Optional[Color] = None,
+        effects: Optional[
+            TerminalEffectType | int | Iterable[TerminalEffectType] | Iterable[int]
+        ] = None,
     ):
         if fg:
             foreground_color = fg
@@ -173,7 +178,9 @@ class ColoredStr:
         if effects:
             if not isinstance(effects, Iterable):
                 effects = [effects]
-            effects = [str(TerminalEffectType(e)) for e in effects if isinstance(e, int)]
+            effects = [
+                str(TerminalEffectType(e)) for e in effects if isinstance(e, int)
+            ]
             if foreground_color:
                 r, g, b = foreground_color.rgb
                 self._foreground = f"\033[{';'.join(effects)};38;2;{r};{g};{b}m"
@@ -211,7 +218,9 @@ class ColoredStr:
         if isinstance(color, tuple):
             return RGBColorType(color)
         elif isinstance(color, str):
-            return RGBColorType(tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2)))
+            return RGBColorType(
+                tuple(int(color[i : i + 2], 16) for i in range(0, 6, 2))
+            )
         else:
             return color
 
@@ -223,7 +232,9 @@ class EffectCode:
     ITALIC: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(3))
     UNDERLINE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(4))
     BLINK: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(5))
-    RAPID_BLINK: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(6))
+    RAPID_BLINK: TerminalEffectType = field(
+        default_factory=lambda: TerminalEffectType(6)
+    )
     REVERSE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(7))
     INVISIBLE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(8))
     STRIKE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(9))
@@ -391,7 +402,9 @@ class ColorCode:
             if len(candidate) == 1:
                 return getattr(ColorCode, candidate[0])
             elif len(candidate) > 1:
-                raise AttributeError(f"Color '{name}' is ambiguous, candidates are {candidate}")
+                raise AttributeError(
+                    f"Color '{name}' is ambiguous, candidates are {candidate}"
+                )
             raise AttributeError(f"Color '{name}' not found")
 
 
@@ -1839,7 +1852,9 @@ class JapaneseColorCode:
             if len(candidate) == 1:
                 return getattr(JapaneseColorCode, candidate[0])
             elif len(candidate) > 1:
-                raise AttributeError(f"Color '{name}' is ambiguous, candidates are {candidate}")
+                raise AttributeError(
+                    f"Color '{name}' is ambiguous, candidates are {candidate}"
+                )
             raise AttributeError(f"Color '{name}' not found")
 
 

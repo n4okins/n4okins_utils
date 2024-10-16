@@ -41,12 +41,12 @@ def initializer(
         FILE_PARENT_DIR, ".gitignore", enable_return_none=True
     )
     if GITIGNORE_PATH is None:
-        logger.info("Could not detect .gitignore file")
+        logger.warning("Could not detect .gitignore file")
     else:
         logger.info(f"{GITIGNORE_PATH=}")
 
     if DOTENV_PATH is None:
-        logger.info("Could not detect .env file")
+        logger.warning("Could not detect .env file")
     else:
         logger.info(f"{DOTENV_PATH=}")
         load_dotenv(dotenv_path=FILE_PARENT_DIR.parent / dotenv_filename)
