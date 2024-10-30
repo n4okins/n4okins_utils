@@ -223,6 +223,14 @@ class ColoredStr:
             )
         else:
             return color
+    
+
+    def __getattr__(self, name: str):
+        if name in self.__dict__:
+            return self.__dict__[name]
+        else:
+            return self._inner_text.__getattribute__(name)
+
 
 
 @dataclass(frozen=True)
