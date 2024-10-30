@@ -126,3 +126,9 @@ class DummyObject:
 
     def __contains__(self, item):
         return True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False

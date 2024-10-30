@@ -1,3 +1,4 @@
+import inspect
 import logging
 from typing import Optional
 
@@ -24,6 +25,16 @@ class ColoredFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         levelname = record.levelname
+        nest_level = (
+            len(
+                [
+                    frame
+                    for frame in inspect.getouterframes(inspect.currentframe())
+                    if record.pathname == frame.filename
+                ]
+            )
+            - 1
+        )
         if levelname in self._colormap:
             if levelname == "CRITICAL":
                 record.levelname = ColoredStr(
@@ -33,7 +44,9 @@ class ColoredFormatter(logging.Formatter):
                 record.levelname = ColoredStr(
                     f"{levelname:^9}", fg=self._colormap[levelname]
                 )
-            record.msg = ColoredStr(record.msg, fg=self._colormap[levelname])
+            record.msg = ColoredStr(
+                nest_level * "    " + record.msg, fg=self._colormap[levelname]
+            )
         return super().format(record)
 
 
@@ -47,7 +60,7 @@ def getColoredLogger(
         handler = logging.StreamHandler()
         handler.setFormatter(
             ColoredFormatter(
-                "%(asctime)s [%(levelname)s] - %(message)s - %(name)s %(filename)s L%(lineno)d",
+                "%(asctime)s\t[%(levelname)s]\t%(message)s\t%(name)s\tL%(lineno)d\t%(funcName)s\t%(pathname)s\t",
                 datefmt="%Y-%m-%d %H:%M:%S",
             )
         )
