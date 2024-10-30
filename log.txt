@@ -1,0 +1,10 @@
+2024-10-30_16:39:23 [  DEBUG  ] debug __main__ L10 <module> main.py 
+2024-10-30_16:39:23 [  INFO   ] info __main__ L11 <module> main.py 
+2024-10-30_16:39:23 [ WARNING ] warning __main__ L12 <module> main.py 
+2024-10-30_16:39:23 [  ERROR  ] error __main__ L13 <module> main.py 
+2024-10-30_16:39:23 [CRITICAL ] critical __main__ L14 <module> main.py 
+2024-10-30_16:39:23 [  DEBUG  ]     debug __main__ L18 hoge main.py 
+2024-10-30_16:39:23 [  INFO   ]     info __main__ L19 hoge main.py 
+2024-10-30_16:39:23 [ WARNING ]     warning __main__ L20 hoge main.py 
+2024-10-30_16:39:23 [  ERROR  ]     error __main__ L21 hoge main.py 
+2024-10-30_16:39:23 [CRITICAL ]     critical __main__ L22 hoge main.py 

@@ -7,6 +7,30 @@ from .colors import JP_COLOR_CODE, Color, ColoredStr
 __all__ = ["ColoredFormatter", "getColoredLogger"]
 
 
+class ColoredFileHandler(logging.FileHandler):
+    def __init__(
+        self,
+        filename: str,
+        mode: str = "a",
+        encoding: Optional[str] = None,
+        delay: bool = False,
+        colormap: Optional[dict[str, Color]] = None,
+    ):
+        super().__init__(filename, mode, encoding, delay)
+        self.setFormatter(
+            ColoredFormatter(
+                "%(asctime)s [%(levelname)s] %(message)s %(name)s L%(lineno)d %(funcName)s %(filename)s ",
+                datefmt="%Y-%m-%d_%H:%M:%S",
+                colormap=colormap,
+            )
+        )
+
+    def emit(self, record: logging.LogRecord) -> None:
+        record.levelname = record.levelname._inner_text
+        record.msg = record.msg._inner_text
+        super().emit(record)
+
+
 class ColoredFormatter(logging.Formatter):
     def __init__(
         self,
