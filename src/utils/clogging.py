@@ -60,8 +60,8 @@ def getColoredLogger(
         handler = logging.StreamHandler()
         handler.setFormatter(
             ColoredFormatter(
-                "%(asctime)s\t[%(levelname)s]\t%(message)s\t%(name)s\tL%(lineno)d\t%(funcName)s\t%(pathname)s\t",
-                datefmt="%Y-%m-%d %H:%M:%S",
+                "%(asctime)s [%(levelname)s] %(message)s %(name)s L%(lineno)d %(funcName)s %(filename)s ",
+                datefmt="%Y-%m-%d_%H:%M:%S",
             )
         )
         logger.addHandler(handler)
