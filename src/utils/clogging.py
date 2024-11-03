@@ -26,8 +26,10 @@ class ColoredFileHandler(logging.FileHandler):
         )
 
     def emit(self, record: logging.LogRecord) -> None:
-        record.levelname = record.levelname._inner_text
-        record.msg = record.msg._inner_text
+        if isinstance(record.levelname, ColoredStr):
+            record.levelname = record.levelname._inner_text
+        if isinstance(record.msg, ColoredStr):
+            record.msg = record.msg._inner_text
         super().emit(record)
 
 
