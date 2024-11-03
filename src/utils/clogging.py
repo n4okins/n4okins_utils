@@ -4,7 +4,7 @@ from typing import Optional
 
 from .colors import JP_COLOR_CODE, Color, ColoredStr
 
-__all__ = ["ColoredFormatter", "getColoredLogger"]
+__all__ = ["ColoredFormatter", "getColoredLogger", "ColoredFileHandler"]
 
 
 class ColoredFileHandler(logging.FileHandler):
