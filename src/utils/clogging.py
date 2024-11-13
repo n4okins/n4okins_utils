@@ -71,7 +71,7 @@ class ColoredFormatter(logging.Formatter):
                     f"{levelname:^9}", fg=self._colormap[levelname]
                 )
             record.msg = ColoredStr(
-                nest_level * "    " + record.msg, fg=self._colormap[levelname]
+                nest_level * "    " + str(record.msg), fg=self._colormap[levelname]
             )
         return super().format(record)
 
