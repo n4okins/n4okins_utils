@@ -119,7 +119,7 @@ class DummyObject:
         return 0
 
     def __iter__(self):
-        return self
+        return [DummyObject()].__iter__()
 
     def __next__(self):
         return DummyObject()
@@ -131,4 +131,61 @@ class DummyObject:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def __bool__(self):
+        return True
+
+    def __repr__(self):
+        return "DummyObject()"
+
+    def __str__(self):
+        return "DummyObject()"
+
+    def __hash__(self):
+        return 0
+
+    def __dir__(self):
+        return []
+
+    def __delattr__(self, name):
+        return DummyObject()
+
+    def __setattr__(self, name, value):
+        return DummyObject()
+
+    def __delitem__(self, key):
+        return DummyObject()
+
+    def __setitem__(self, key, value):
+        return DummyObject()
+
+    def __format__(self, format_spec):
+        return "DummyObject()"
+
+    def __index__(self):
+        return 0
+
+    def __copy__(self):
+        return DummyObject()
+
+    def __deepcopy__(self, memo):
+        return DummyObject()
+
+    def __reversed__(self):
+        return DummyObject()
+
+    def __await__(self):
+        return DummyObject()
+
+    def __aiter__(self):
+        return [DummyObject()].__iter__()
+
+    def __anext__(self):
+        return DummyObject()
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc_value, traceback):
         return False

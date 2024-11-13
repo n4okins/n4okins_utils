@@ -13,9 +13,6 @@ __all__ = [
     "JapaneseColorCode",
     "ColorTheme",
     "JapaneseColorTheme",
-    "EFFECT_CODE",
-    "COLOR_CODE",
-    "JP_COLOR_CODE",
 ]
 
 
@@ -248,7 +245,7 @@ class EffectCode:
     STRIKE: TerminalEffectType = field(default_factory=lambda: TerminalEffectType(9))
 
 
-EFFECT_CODE = EffectCode()
+EffectCode = EffectCode()
 
 
 def colorfield(*args):
@@ -416,7 +413,7 @@ class ColorCode:
             raise AttributeError(f"Color '{name}' not found")
 
 
-COLOR_CODE = ColorCode()
+ColorCode = ColorCode()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1866,7 +1863,7 @@ class JapaneseColorCode:
             raise AttributeError(f"Color '{name}' not found")
 
 
-JP_COLOR_CODE = JapaneseColorCode()
+JapaneseColorCode = JapaneseColorCode()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1896,46 +1893,46 @@ class JapaneseColorTheme:
     春: ColorTheme = ColorTheme(
         "春",
         (
-            JP_COLOR_CODE.桜色,
-            JP_COLOR_CODE.若葉色,
-            JP_COLOR_CODE.紅梅色,
-            JP_COLOR_CODE.柳茶,
-            JP_COLOR_CODE.菜の花色,
-            JP_COLOR_CODE.青藤色,
+            JapaneseColorCode.桜色,
+            JapaneseColorCode.若葉色,
+            JapaneseColorCode.紅梅色,
+            JapaneseColorCode.柳茶,
+            JapaneseColorCode.菜の花色,
+            JapaneseColorCode.青藤色,
         ),
     )
     夏: ColorTheme = ColorTheme(
         "夏",
         (
-            JP_COLOR_CODE.浅葱色,
-            JP_COLOR_CODE.若竹色,
-            JP_COLOR_CODE.萱草色,
-            JP_COLOR_CODE.露草色,
-            JP_COLOR_CODE.小鴨色,
-            JP_COLOR_CODE.杜若色,
-            JP_COLOR_CODE.菖蒲色,
+            JapaneseColorCode.浅葱色,
+            JapaneseColorCode.若竹色,
+            JapaneseColorCode.萱草色,
+            JapaneseColorCode.露草色,
+            JapaneseColorCode.小鴨色,
+            JapaneseColorCode.杜若色,
+            JapaneseColorCode.菖蒲色,
         ),
     )
     秋: ColorTheme = ColorTheme(
         "秋",
         (
-            JP_COLOR_CODE.茜色,
-            JP_COLOR_CODE.深支子,
-            JP_COLOR_CODE.竜胆色,
-            JP_COLOR_CODE.柿色,
-            JP_COLOR_CODE.栗皮茶,
-            JP_COLOR_CODE.群青色,
+            JapaneseColorCode.茜色,
+            JapaneseColorCode.深支子,
+            JapaneseColorCode.竜胆色,
+            JapaneseColorCode.柿色,
+            JapaneseColorCode.栗皮茶,
+            JapaneseColorCode.群青色,
         ),
     )
     冬: ColorTheme = ColorTheme(
         "冬",
         (
-            JP_COLOR_CODE.銀鼠,
-            JP_COLOR_CODE.消炭色,
-            JP_COLOR_CODE.薄香,
-            JP_COLOR_CODE.千歳緑,
-            JP_COLOR_CODE.朱色,
-            JP_COLOR_CODE.藁色,
+            JapaneseColorCode.銀鼠,
+            JapaneseColorCode.消炭色,
+            JapaneseColorCode.薄香,
+            JapaneseColorCode.千歳緑,
+            JapaneseColorCode.朱色,
+            JapaneseColorCode.藁色,
         ),
     )
 
@@ -1943,4 +1940,4 @@ class JapaneseColorTheme:
         return iter((getattr(self, name) for name in self.__slots__))
 
 
-JP_COLOR_THEME = JapaneseColorTheme()
+JapaneseColorTheme = JapaneseColorTheme()

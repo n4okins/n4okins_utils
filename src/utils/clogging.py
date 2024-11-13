@@ -2,7 +2,7 @@ import inspect
 import logging
 from typing import Optional
 
-from .colors import JP_COLOR_CODE, Color, ColoredStr
+from .colors import JapaneseColorCode, Color, ColoredStr
 
 __all__ = ["ColoredFormatter", "getColoredLogger", "ColoredFileHandler"]
 
@@ -42,11 +42,11 @@ class ColoredFormatter(logging.Formatter):
     ):
         super().__init__(fmt, datefmt)
         self._colormap = colormap or {
-            "DEBUG": JP_COLOR_CODE.AO,
-            "INFO": JP_COLOR_CODE.WAKATAKEIRO,
-            "WARNING": JP_COLOR_CODE.KIKUCHINASHIIRO,
-            "ERROR": JP_COLOR_CODE.HIIRO,
-            "CRITICAL": JP_COLOR_CODE.KURENAI,
+            "DEBUG": JapaneseColorCode.AO,
+            "INFO": JapaneseColorCode.WAKATAKEIRO,
+            "WARNING": JapaneseColorCode.KIKUCHINASHIIRO,
+            "ERROR": JapaneseColorCode.HIIRO,
+            "CRITICAL": JapaneseColorCode.KURENAI,
         }
 
     def format(self, record: logging.LogRecord) -> str:
